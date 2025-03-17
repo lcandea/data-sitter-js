@@ -14,7 +14,7 @@ A browser-based web worker implementation of the data-sitter validation library.
 ## Installation
 
 ```bash
-npm install data-sitter-js
+npm install data-sitter
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ npm install data-sitter-js
 ### Basic Usage
 
 ```typescript
-import { validateData, initializeDataSitter } from 'data-sitter-js';
+import { validateData, initializeDataSitter } from 'data-sitter';
 
 // Initialize the library (optional, will happen automatically on first use)
 await initializeDataSitter();
@@ -57,7 +57,7 @@ if (result.success) {
 ### Validating CSV Data
 
 ```typescript
-import { validateCsv } from 'data-sitter-js';
+import { validateCsv } from 'data-sitter';
 
 const contract = {
   name: "UserData",
@@ -84,7 +84,7 @@ if (result.success) {
 ### Getting Field Definitions
 
 ```typescript
-import { getFieldDefinitions } from 'data-sitter-js';
+import { getFieldDefinitions } from 'data-sitter';
 
 const definitions = await getFieldDefinitions();
 console.log("Available field definitions:", definitions);
@@ -93,7 +93,7 @@ console.log("Available field definitions:", definitions);
 ### Getting Contract Representation
 
 ```typescript
-import { getRepresentation } from 'data-sitter-js';
+import { getRepresentation } from 'data-sitter';
 
 const contract = JSON.stringify({
   name: "UserData",
