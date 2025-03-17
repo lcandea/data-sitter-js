@@ -1,0 +1,30 @@
+# Source
+src/
+examples/
+test/
+
+# Config files
+tsconfig.json
+jest.config.js
+.github/
+
+# Git files
+.gitignore
+.git/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/

@@ -1,0 +1,130 @@
+# Data-Sitter JS
+
+A browser-based web worker implementation of the data-sitter validation library.
+
+## Features
+
+- Runs entirely in the browser with no server-side dependencies
+- Uses Web Workers for non-blocking validation operations
+- Automatically initializes Pyodide and installs dependencies
+- Simple API for data validation
+- TypeScript support with full type definitions
+- Supports validation of JSON data and CSV files
+
+## Installation
+
+```bash
+npm install data-sitter-js
+```
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { validateData, initializeDataSitter } from 'data-sitter-js';
+
+// Initialize the library (optional, will happen automatically on first use)
+await initializeDataSitter();
+
+// Define your contract schema
+const contract = {
+  name: "UserData",
+  fields: {
+    name: { type: "string", required: true },
+    age: { type: "number", required: true },
+    email: { type: "string", required: true, rules: [{ type: "email" }] }
+  }
+};
+
+// Data to validate
+const data = {
+  name: "John Doe",
+  age: 30,
+  email: "john.doe@example.com"
+};
+
+// Validate the data
+const result = await validateData(contract, data);
+
+if (result.success) {
+  console.log("Validation results:", result.result);
+} else {
+  console.error("Error:", result.error);
+}
+```
+
+### Validating CSV Data
+
+```typescript
+import { validateCsv } from 'data-sitter-js';
+
+const contract = {
+  name: "UserData",
+  fields: {
+    name: { type: "string", required: true },
+    age: { type: "number", required: true },
+    email: { type: "string", required: true, rules: [{ type: "email" }] }
+  }
+};
+
+const csvData = `name,age,email
+John Doe,30,john.doe@example.com
+Jane Smith,25,jane.smith@example.com`;
+
+const result = await validateCsv(contract, csvData);
+
+if (result.success) {
+  console.log("Validation results:", result.result);
+} else {
+  console.error("Error:", result.error);
+}
+```
+
+### Getting Field Definitions
+
+```typescript
+import { getFieldDefinitions } from 'data-sitter-js';
+
+const definitions = await getFieldDefinitions();
+console.log("Available field definitions:", definitions);
+```
+
+### Getting Contract Representation
+
+```typescript
+import { getRepresentation } from 'data-sitter-js';
+
+const contract = JSON.stringify({
+  name: "UserData",
+  fields: {
+    name: { type: "string", required: true },
+    age: { type: "number", required: true },
+    email: { type: "string", required: true, rules: [{ type: "email" }] }
+  }
+});
+
+const representation = await getRepresentation(contract);
+console.log("Contract representation:", representation.result);
+```
+
+## Browser Support
+
+This library requires browsers that support:
+- Web Workers
+- ES Modules
+- SharedArrayBuffer (for Pyodide)
+
+## Performance Considerations
+
+- The first initialization of Pyodide and data-sitter may take a few seconds
+- Subsequent calls will be much faster as the environment is already initialized
+- The library uses a single web worker instance for all operations to minimize overhead
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
