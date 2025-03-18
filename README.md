@@ -29,19 +29,45 @@ await initializeDataSitter();
 
 // Define your contract schema
 const contract = {
-  name: "UserData",
-  fields: {
-    name: { type: "string", required: true },
-    age: { type: "number", required: true },
-    email: { type: "string", required: true, rules: [{ type: "email" }] }
-  }
+  name: "User",
+  fields: [
+    {
+      field_name: "ID",
+      field_type: "IntegerField",
+      field_rules: ["Positive"],
+    },
+    {
+      field_name: "First Name",
+      field_type: "StringField",
+      field_rules: [
+        "Validate Not Null",
+        "Is not empty",
+        "Length between $values.min_length and $values.max_length",
+      ],
+    },
+    {
+      field_name: "Age",
+      field_type: "IntegerField",
+      field_rules: ["Positive", "Between 18 and 99"],
+    },
+    {
+      field_name: "Title",
+      field_type: "StringField",
+      field_rules: ["Value in ['Mr.', 'Ms.', 'Mrs.', 'Dr.', 'Prof.']"],
+    },
+  ],
+  values: {
+    min_length: 2,
+    max_length: 50,
+  },
 };
 
 // Data to validate
 const data = {
-  name: "John Doe",
-  age: 30,
-  email: "john.doe@example.com"
+  ID: 1,
+  "First Name": "John",
+  Age: 21,
+  Title: "Mr.",
 };
 
 // Validate the data
@@ -59,19 +85,11 @@ if (result.success) {
 ```typescript
 import { validateCsv } from 'data-sitter';
 
-const contract = {
-  name: "UserData",
-  fields: {
-    name: { type: "string", required: true },
-    age: { type: "number", required: true },
-    email: { type: "string", required: true, rules: [{ type: "email" }] }
-  }
-};
 
-const csvData = `name,age,email
-John Doe,30,john.doe@example.com
-Jane Smith,25,jane.smith@example.com`;
-
+const csvData = `ID,First Name,Age,Title
+1,John,12,Mr.
+2,Mery,30,Ms.
+`
 const result = await validateCsv(contract, csvData);
 
 if (result.success) {
@@ -94,15 +112,6 @@ console.log("Available field definitions:", definitions);
 
 ```typescript
 import { getRepresentation } from 'data-sitter';
-
-const contract = JSON.stringify({
-  name: "UserData",
-  fields: {
-    name: { type: "string", required: true },
-    age: { type: "number", required: true },
-    email: { type: "string", required: true, rules: [{ type: "email" }] }
-  }
-});
 
 const representation = await getRepresentation(contract);
 console.log("Contract representation:", representation.result);

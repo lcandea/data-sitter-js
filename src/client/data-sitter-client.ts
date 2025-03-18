@@ -3,11 +3,16 @@
  * A TypeScript wrapper for using data-sitter validation in the browser
  */
 
-import type { PythonResponse, ImportData, Validation, FieldDefinition } from "../types";
+import type {
+  PythonResponse,
+  ImportData,
+  Validation,
+  FieldDefinition,
+} from "../types";
 import initDataSitterText from "./init_datasitter.py";
-import { PyodideInterface } from "pyodide"
+import { PyodideInterface } from "pyodide";
 
-const DATA_SITTER_VERSION = "0.1.3"
+const DATA_SITTER_VERSION = "0.1.4";
 
 declare global {
   interface Window {
@@ -15,28 +20,27 @@ declare global {
   }
 }
 
-// Workaround: import { loadPyodide } from "pyodide" -> The dependency might be incompatible with the dep optimizer. 
+// Workaround: import { loadPyodide } from "pyodide" -> The dependency might be incompatible with the dep optimizer.
 export async function loadPyodideFromCDN(): Promise<PyodideInterface> {
   // If Pyodide is already loaded, return the global instance
-  if (typeof window !== 'undefined' && window.loadPyodide) {
+  if (typeof window !== "undefined" && window.loadPyodide) {
     return window.loadPyodide();
   }
 
   // Load the script from CDN
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js';
-  
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js";
+
   // Wait for the script to load
   await new Promise<void>((resolve, reject) => {
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Pyodide'));
+    script.onerror = () => reject(new Error("Failed to load Pyodide"));
     document.head.appendChild(script);
   });
 
   // Now the global loadPyodide function should be available
   return window.loadPyodide!();
 }
-
 
 class DataSitterValidator {
   private pyodide: PyodideInterface | null = null;
@@ -113,8 +117,8 @@ class DataSitterValidator {
       if (!pythonFunction) {
         throw new Error(`Python Function not found: ${functionName}`);
       }
-      const resultStr = pythonFunction.callKwargs(params)
-      pythonFunction.destroy()
+      const resultStr = pythonFunction.callKwargs(params);
+      pythonFunction.destroy();
 
       return JSON.parse(resultStr) as PythonResponse<T>;
     } catch (error) {
@@ -177,10 +181,12 @@ export async function validateCsv(
  * @returns {Promise<PythonResponse<ImportData>>} - Object with success flag and result/error
  */
 export async function getRepresentation(
-  contract: string
+  contract: string,
+  format: "JSON" | "YAML"
 ): Promise<PythonResponse<ImportData>> {
   return dataSitterValidator.executePython("get_front_end_contract", {
     contract,
+    str_format: format,
   });
 }
 
@@ -189,7 +195,8 @@ export async function getRepresentation(
  * @returns {Promise<FieldDefinition[]>} - Object with success flag and result/error
  */
 export async function getFieldDefinitions(): Promise<FieldDefinition[]> {
-  return (await dataSitterValidator.executePython("get_field_definitions")).result! as FieldDefinition[];
+  return (await dataSitterValidator.executePython("get_field_definitions"))
+    .result! as FieldDefinition[];
 }
 
 // Export the validator instance if needed

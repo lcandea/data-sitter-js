@@ -1,6 +1,6 @@
 import io
 import json
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, Union
 
 import pandas as pd
 from pyodide.ffi import JsProxy
@@ -18,6 +18,15 @@ def error_response(error: str):
     return json.dumps({"success": False, "error": error}, default=str)
 
 
+def get_validator(contract: Union[str, dict]) -> Contract:
+    if isinstance(contract, str):
+        return Contract.from_json(contract)
+    elif isinstance(contract, dict):
+        return Contract.from_dict(contract)
+    else:
+        raise TypeError("The format should be either a string or a dictionary.")
+
+
 def pythonise(func: Callable):
     def _pythonise(*js_args, **js_kwargs):
         args = [arg.to_py() if isinstance(arg, JsProxy) else arg for arg in js_args]
@@ -31,9 +40,7 @@ def pythonise(func: Callable):
 
 @pythonise
 def validate_objects(contract: Union[str, dict], data: Union[str, list, dict]):
-    if isinstance(contract, str):
-        contract = json.loads(contract)
-    validator = Contract.from_dict(contract)
+    validator = get_validator(contract)
 
     if isinstance(data, str):
         data = json.loads(data)
@@ -48,9 +55,7 @@ def validate_objects(contract: Union[str, dict], data: Union[str, list, dict]):
 
 @pythonise
 def validate_csv(contract: Union[str, dict], csv_data: str):
-    if isinstance(contract, str):
-        contract = json.loads(contract)
-    validator = Contract.from_dict(contract)
+    validator = get_validator(contract)
 
     df = pd.read_csv(io.StringIO(csv_data))
     df = df.where(pd.notna(df), None)
@@ -62,10 +67,14 @@ def validate_csv(contract: Union[str, dict], csv_data: str):
 
 
 @pythonise
-def get_front_end_contract(contract: str):
-    contract_validator = Contract.from_dict(json.loads(contract))
-    front_end_contract = contract_validator.get_front_end_contract()
-    return front_end_contract
+def get_front_end_contract(contract: str, str_format: str = 'JSON'):
+    if str_format == "JSON":
+        contract_validator = Contract.from_json(contract)
+    elif str_format == "YAML":
+        contract_validator = Contract.from_yaml(contract)
+    else:
+        raise ValueError(f"Format must be either 'JSON' or 'YAML'. Got '{str_format}'")
+    return contract_validator.get_front_end_contract()
 
 
 def get_field_definitions():
