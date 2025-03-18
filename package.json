@@ -1,6 +1,6 @@
 {
   "name": "data-sitter",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Web worker wrapper for data-sitter validation in browsers",
   "main": "dist/index.cjs",
   "module": "dist/index.js",

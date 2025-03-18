@@ -33,7 +33,7 @@ export interface ImportData {
 }
 
 export interface Validation {
-  row: Record<string, any>;
+  item: Record<string, any>;
   errors?: Record<string, string[]>;
   unknowns?: Record<string, string>;
 }
