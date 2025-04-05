@@ -1,13 +1,21 @@
 {
   "name": "data-sitter",
-  "version": "0.1.5",
+  "version": "0.1.6-beta.0",
   "description": "Web worker wrapper for data-sitter validation in browsers",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "exports": {
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    },
+    "./worker": "./dist/datasitter.worker.js"
   },
   "type": "module",
   "scripts": {
