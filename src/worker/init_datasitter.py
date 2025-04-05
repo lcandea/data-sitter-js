@@ -67,14 +67,19 @@ def validate_csv(contract: Union[str, dict], csv_data: str):
 
 
 @pythonise
-def get_front_end_contract(contract: str, str_format: str = 'JSON'):
-    if str_format == "JSON":
-        contract_validator = Contract.from_json(contract)
-    elif str_format == "YAML":
-        contract_validator = Contract.from_yaml(contract)
-    else:
-        raise ValueError(f"Format must be either 'JSON' or 'YAML'. Got '{str_format}'")
-    return contract_validator.get_front_end_contract()
+def from_json(contract: str) -> Contract:
+    return Contract.from_json(contract).contract
+
+
+@pythonise
+def from_yaml(contract: str) -> Contract:
+    return Contract.from_yaml(contract).contract
+
+
+@pythonise
+def get_front_end_contract(contract: Union[str, dict]):
+    validator = get_validator(contract)
+    return validator.get_front_end_contract()
 
 
 def get_field_definitions():

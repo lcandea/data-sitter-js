@@ -17,23 +17,27 @@ export interface PythonResponse<T = any> {
   error?: string;
 }
 
-export interface ImportData {
-  name: string;
-  fields: Array<{
-    field_name: string;
-    field_type: string;
-    field_rules: Array<{
-      rule: string;
-      parsed_rule: string;
-      rule_params: Record<string, string>;
-      parsed_values: Record<string, any>;
-    }>;
-  }>;
-  values: Record<string, any>;
-}
-
 export interface Validation {
   item: Record<string, any>;
   errors?: Record<string, string[]>;
   unknowns?: Record<string, string>;
+}
+
+export interface FieldRule {
+  rule: string;
+  parsed_rule: string;
+  rule_params: Record<string, string>;
+  parsed_values: Record<string, any>;
+}
+
+export interface Field {
+  field_name: string;
+  field_type: string;
+  field_rules: FieldRule[];
+}
+
+export interface ImportData {
+  name: string;
+  fields: Field[];
+  values: Record<string, any>;
 }
