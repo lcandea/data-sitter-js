@@ -1,6 +1,6 @@
 {
   "name": "data-sitter",
-  "version": "0.1.6-beta.0",
+  "version": "0.1.6",
   "description": "Web worker wrapper for data-sitter validation in browsers",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

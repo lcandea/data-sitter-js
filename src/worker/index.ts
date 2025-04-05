@@ -5,7 +5,6 @@ import type {
   ImportData,
   Validation,
   FieldDefinition,
-  ContractFormat,
 } from "../types";
 
 // Initialize Pyodide
@@ -40,9 +39,11 @@ self.onmessage = async (event: MessageEvent) => {
   try {
     let result;
     switch (action) {
-      case "initialize":
-        await initialize();
-        result = { success: true };
+      case "fromJson":
+        result = await fromJson(params.contract);
+        break;
+      case "fromYaml":
+        result = await fromYaml(params.contract);
         break;
       case "validateData":
         result = await validateData(params.contract, params.data);
@@ -51,7 +52,7 @@ self.onmessage = async (event: MessageEvent) => {
         result = await validateCsv(params.contract, params.csvData);
         break;
       case "getRepresentation":
-        result = await getRepresentation(params.contract, params.format);
+        result = await getRepresentation(params.contract);
         break;
       case "getFieldDefinitions":
         result = await getFieldDefinitions();
@@ -177,17 +178,35 @@ async function validateCsv(
 }
 
 /**
- * Get the Front End representation of a contract
+ * Get the a contract from JSON string
  * @param {string} contract - JSON string of the contract schema
+ * @returns {Promise<PythonResponse<Record<string, any>>>} - Object with success flag and result/error
+ */
+async function fromJson(contract: string): Promise<PythonResponse<ImportData>> {
+  return executePython("from_json", { contract });
+}
+
+/**
+ * Get the a contract from YAML string
+ * @param {string} contract - YAML string of the contract schema
+ * @returns {Promise<PythonResponse<Record<string, any>>>} - Object with success flag and result/error
+ */
+async function fromYaml(
+  contract: string
+): Promise<PythonResponse<Record<string, any>>> {
+  return executePython("from_yaml", { contract });
+}
+
+/**
+ * Get the Front End representation of a contract
+ * @param {string} contract - JSON or Map string of the contract schema
  * @returns {Promise<PythonResponse<ImportData>>} - Object with success flag and result/error
  */
 async function getRepresentation(
-  contract: string,
-  format: ContractFormat
+  contract: string
 ): Promise<PythonResponse<ImportData>> {
   return executePython("get_front_end_contract", {
     contract,
-    str_format: format,
   });
 }
 

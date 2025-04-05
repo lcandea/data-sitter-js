@@ -5,8 +5,6 @@ export type FieldType =
   | "IntegerField"
   | "FloatField";
 
-export type ContractFormat = "JSON" | "YAML";
-
 export type FieldDefinition = {
   field: FieldType;
   parent_field: FieldType[];
