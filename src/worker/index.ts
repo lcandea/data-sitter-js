@@ -1,8 +1,9 @@
 import initDataSitterText from "./init_datasitter.py";
 import type { PyodideInterface } from "pyodide";
 import type {
+  Contract,
+  FEContract,
   PythonResponse,
-  ImportData,
   Validation,
   FieldDefinition,
 } from "../types";
@@ -13,7 +14,7 @@ let isInitialized = false;
 let isInitializing = false;
 let initPromise: Promise<void> | null = null;
 
-const DATA_SITTER_VERSION = "0.1.4";
+const DATA_SITTER_VERSION = "0.1.6";
 
 declare global {
   var loadPyodide: undefined | (() => Promise<PyodideInterface>);
@@ -25,7 +26,7 @@ export async function loadPyodideFromCDN(): Promise<PyodideInterface> {
     return self.loadPyodide();
   }
 
-  importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js");
+  importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js");
   if (!self.loadPyodide) {
     throw new Error("Failed to load Pyodide");
   }
@@ -44,6 +45,12 @@ self.onmessage = async (event: MessageEvent) => {
         break;
       case "fromYaml":
         result = await fromYaml(params.contract);
+        break;
+      case "toJson":
+        result = await toJson(params.contract, params.indent);
+        break;
+      case "toYaml":
+        result = await toYaml(params.contract, params.indent);
         break;
       case "validateData":
         result = await validateData(params.contract, params.data);
@@ -75,9 +82,6 @@ self.onmessage = async (event: MessageEvent) => {
   }
 };
 
-/**
- * Initialize the Pyodide environment and install data-sitter
- */
 async function initialize(): Promise<void> {
   if (isInitialized) return Promise.resolve();
 
@@ -92,13 +96,9 @@ async function initialize(): Promise<void> {
 
       console.log("Loading micropip...");
       await pyodide.loadPackage("micropip");
-
-      console.log("Installing data-sitter and pandas...");
-      await pyodide.runPythonAsync(`
-        import micropip
-        await micropip.install("pandas")
-        await micropip.install('data-sitter==${DATA_SITTER_VERSION}')
-      `);
+      const micropip = pyodide.pyimport("micropip");
+      await micropip.install("pandas");
+      await micropip.install(`data-sitter==${DATA_SITTER_VERSION}`);
       await pyodide.runPythonAsync(initDataSitterText);
 
       isInitialized = true;
@@ -114,9 +114,6 @@ async function initialize(): Promise<void> {
   return initPromise;
 }
 
-/**
- * Execute a Python function with the given parameters
- */
 async function executePython<T>(
   functionName: string,
   params: Record<string, any> = {}
@@ -145,14 +142,8 @@ async function executePython<T>(
   }
 }
 
-/**
- * Validate data against a contract schema
- * @param {Record<string, any>} contract - The contract schema
- * @param {Record<string, any>[]} data - The data to validate
- * @returns {Promise<PythonResponse<Validation[]>>} - Object with success flag and result/error
- */
 async function validateData(
-  contract: Record<string, any> | string,
+  contract: Contract,
   data: Record<string, any> | Record<string, any>[] | string
 ): Promise<PythonResponse<Validation[]>> {
   return executePython("validate_objects", {
@@ -161,14 +152,8 @@ async function validateData(
   });
 }
 
-/**
- * Validate data in CSV format against a contract schema
- * @param {Record} contract - JSON string of the contract schema
- * @param {string} csvData - JSON string of the CSV to validate
- * @returns {Promise<PythonResponse<Validation[]>>} - Object with success flag and result/error
- */
 async function validateCsv(
-  contract: Record<string, any> | string,
+  contract: Contract,
   csvData: string
 ): Promise<PythonResponse<Validation[]>> {
   return executePython("validate_csv", {
@@ -177,43 +162,36 @@ async function validateCsv(
   });
 }
 
-/**
- * Get the a contract from JSON string
- * @param {string} contract - JSON string of the contract schema
- * @returns {Promise<PythonResponse<Record<string, any>>>} - Object with success flag and result/error
- */
-async function fromJson(contract: string): Promise<PythonResponse<ImportData>> {
+async function fromJson(contract: string): Promise<PythonResponse<Contract>> {
   return executePython("from_json", { contract });
 }
 
-/**
- * Get the a contract from YAML string
- * @param {string} contract - YAML string of the contract schema
- * @returns {Promise<PythonResponse<Record<string, any>>>} - Object with success flag and result/error
- */
-async function fromYaml(
-  contract: string
-): Promise<PythonResponse<Record<string, any>>> {
+async function fromYaml(contract: string): Promise<PythonResponse<Contract>> {
   return executePython("from_yaml", { contract });
 }
 
-/**
- * Get the Front End representation of a contract
- * @param {string} contract - JSON or Map string of the contract schema
- * @returns {Promise<PythonResponse<ImportData>>} - Object with success flag and result/error
- */
+async function toJson(
+  contract: Contract,
+  indent: number = 2
+): Promise<PythonResponse<string>> {
+  return executePython("to_json", { contract, indent });
+}
+
+async function toYaml(
+  contract: Contract,
+  indent: number = 2
+): Promise<PythonResponse<string>> {
+  return executePython("to_yaml", { contract, indent });
+}
+
 async function getRepresentation(
-  contract: string
-): Promise<PythonResponse<ImportData>> {
+  contract: Contract
+): Promise<PythonResponse<FEContract>> {
   return executePython("get_front_end_contract", {
     contract,
   });
 }
 
-/**
- * Get all definitions for all fields and their rules
- * @returns {Promise<PythonResponse<FieldDefinition[]>>} - Object with success flag and result/error
- */
 async function getFieldDefinitions(): Promise<
   PythonResponse<FieldDefinition[]>
 > {

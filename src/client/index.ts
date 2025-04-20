@@ -1,11 +1,16 @@
-import type { ImportData, Validation, FieldDefinition } from "../types";
+import type {
+  Contract,
+  FEContract,
+  Validation,
+  FieldDefinition,
+} from "../types";
 import { DataSitterWorker } from "./ds-worker";
 
 export class DataSitterValidator {
-  private contract: Record<string, any> | string;
+  private contract: Contract;
   private worker: DataSitterWorker;
 
-  constructor(contract: Record<string, any> | string) {
+  constructor(contract: Contract) {
     this.contract = contract;
     this.worker = DataSitterWorker.getInstance();
   }
@@ -26,6 +31,20 @@ export class DataSitterValidator {
     });
   }
 
+  async toJson(indent: number = 2): Promise<string> {
+    return this.worker.sendMessage("toJson", {
+      contract: this.contract,
+      indent,
+    });
+  }
+
+  async toYaml(indent: number = 2): Promise<string> {
+    return this.worker.sendMessage("toYaml", {
+      contract: this.contract,
+      indent,
+    });
+  }
+
   static async fromJson(contract: string): Promise<DataSitterValidator> {
     const worker = DataSitterWorker.getInstance();
     return new DataSitterValidator(
@@ -40,7 +59,7 @@ export class DataSitterValidator {
     );
   }
 
-  async getRepresentation(): Promise<ImportData> {
+  async getRepresentation(): Promise<FEContract> {
     return this.worker.sendMessage("getRepresentation", {
       contract: this.contract,
     });

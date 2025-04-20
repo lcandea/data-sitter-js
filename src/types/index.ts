@@ -1,9 +1,18 @@
-export type FieldType =
-  | "BaseField"
-  | "StringField"
-  | "NumericField"
-  | "IntegerField"
-  | "FloatField";
+export type FieldType = "Base" | "String" | "Numeric" | "Integer" | "Float";
+export type ValuesType = string | string[] | number | number[];
+export type Values = Record<string, ValuesType>;
+
+export type Field = {
+  name: string;
+  type: string;
+  rules: string[];
+};
+
+export interface Contract {
+  name: string;
+  fields: Field[];
+  values: Values;
+}
 
 export type FieldDefinition = {
   field: FieldType;
@@ -23,21 +32,22 @@ export interface Validation {
   unknowns?: Record<string, string>;
 }
 
-export interface FieldRule {
+export interface FEFieldRule {
   rule: string;
   parsed_rule: string;
   rule_params: Record<string, string>;
   parsed_values: Record<string, any>;
 }
 
-export interface Field {
-  field_name: string;
-  field_type: string;
-  field_rules: FieldRule[];
+export interface FEField {
+  name: string;
+  type: string;
+  rules: FEFieldRule[];
 }
 
-export interface ImportData {
+// Front End representation of a contract
+export interface FEContract {
   name: string;
-  fields: Field[];
-  values: Record<string, any>;
+  fields: FEField[];
+  values: Values;
 }
