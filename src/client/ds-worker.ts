@@ -1,4 +1,9 @@
 import { PythonResponse } from "../types";
+import {
+  WorkerMessageType,
+  WorkerMessageResponse,
+  WorkerMessagePayload,
+} from "../types/messages";
 
 interface WorkerResponse<T = unknown> {
   id: number;
@@ -97,15 +102,15 @@ export class DataSitterWorker {
   }
 
   /**
-   * Send a message to the worker and wait for a response
+   * Send a type-safe message to the worker and wait for a response
    */
-  async sendMessage<T>(
-    action: string,
-    params: Record<string, unknown> = {}
-  ): Promise<T> {
+  async sendTypedMessage<T extends WorkerMessageType>(
+    type: T,
+    payload: WorkerMessagePayload<T>
+  ): Promise<WorkerMessageResponse<T>> {
     const id = this.requestId++ % Number.MAX_SAFE_INTEGER; // Prevent overflow
 
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<WorkerMessageResponse<T>>((resolve, reject) => {
       this.pendingRequests.set(id, {
         resolve,
         reject,
@@ -113,7 +118,7 @@ export class DataSitterWorker {
       });
 
       try {
-        this.worker.postMessage({ id, action, params });
+        this.worker.postMessage({ id, type, payload });
       } catch (error) {
         this.pendingRequests.delete(id);
         reject(error);

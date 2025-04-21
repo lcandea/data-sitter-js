@@ -18,28 +18,28 @@ export class DataSitterValidator {
   async validateData(
     data: Record<string, any> | Record<string, any>[] | string
   ): Promise<Validation[]> {
-    return this.worker.sendMessage("validateData", {
+    return this.worker.sendTypedMessage("validateData", {
       contract: this.contract,
       data,
     });
   }
 
   async validateCsv(csvData: string): Promise<Validation[]> {
-    return this.worker.sendMessage("validateCsv", {
+    return this.worker.sendTypedMessage("validateCsv", {
       contract: this.contract,
       csvData,
     });
   }
 
   async toJson(indent: number = 2): Promise<string> {
-    return this.worker.sendMessage("toJson", {
+    return this.worker.sendTypedMessage("toJson", {
       contract: this.contract,
       indent,
     });
   }
 
   async toYaml(indent: number = 2): Promise<string> {
-    return this.worker.sendMessage("toYaml", {
+    return this.worker.sendTypedMessage("toYaml", {
       contract: this.contract,
       indent,
     });
@@ -48,25 +48,25 @@ export class DataSitterValidator {
   static async fromJson(contract: string): Promise<DataSitterValidator> {
     const worker = DataSitterWorker.getInstance();
     return new DataSitterValidator(
-      await worker.sendMessage("fromJson", { contract })
+      await worker.sendTypedMessage("fromJson", { contract })
     );
   }
 
   static async fromYaml(contract: string): Promise<DataSitterValidator> {
     const worker = DataSitterWorker.getInstance();
     return new DataSitterValidator(
-      await worker.sendMessage("fromYaml", { contract })
+      await worker.sendTypedMessage("fromYaml", { contract })
     );
   }
 
   async getRepresentation(): Promise<FEContract> {
-    return this.worker.sendMessage("getRepresentation", {
+    return this.worker.sendTypedMessage("getRepresentation", {
       contract: this.contract,
     });
   }
 
   static async getFieldDefinitions(): Promise<FieldDefinition[]> {
     const worker = DataSitterWorker.getInstance();
-    return worker.sendMessage<FieldDefinition[]>("getFieldDefinitions");
+    return worker.sendTypedMessage("getFieldDefinitions", undefined);
   }
 }
